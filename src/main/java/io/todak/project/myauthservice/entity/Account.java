@@ -20,9 +20,11 @@ public class Account extends DateTimeEntity {
     private Long id;
 
     @Column(unique = true, nullable = false)
+    @Getter
     private String username;
 
     @Column(unique = true, nullable = false)
+    @Getter
     private String password;
 
     @Builder
