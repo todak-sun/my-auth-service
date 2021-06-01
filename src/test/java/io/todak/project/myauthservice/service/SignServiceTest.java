@@ -1,7 +1,10 @@
 package io.todak.project.myauthservice.service;
 
+import io.todak.project.myauthservice.domain.Token;
 import io.todak.project.myauthservice.entity.Account;
-import io.todak.project.myauthservice.exception.DuplicateException;
+import io.todak.project.myauthservice.exception.DuplicateResourceException;
+import io.todak.project.myauthservice.exception.InvalidPasswordException;
+import io.todak.project.myauthservice.exception.NotFoundResourceException;
 import io.todak.project.myauthservice.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -40,7 +43,7 @@ class SignServiceTest {
         assertEquals(signService, beanSignService, "스프링 Bean으로 등록되어 있다.");
     }
 
-    @DisplayName("회원가입 서비스 성공 테스트")
+    @DisplayName("회원가입 -  성공 테스트")
     @Test
     public void sign_up_test_success() {
         //given
@@ -62,7 +65,7 @@ class SignServiceTest {
         log.info("id : {}", newAccount.getId());
     }
 
-    @DisplayName("중복된 아이디로 회원가입을 시도하면 적절한 에러를 뱉어내는 테스트")
+    @DisplayName("회원가입 - 중복된 아이디로 회원가입을 시도하면 적절한 에러를 뱉어내는 테스트")
     @Test
     public void sign_up_test_duplicated_username() {
         // given
@@ -73,13 +76,64 @@ class SignServiceTest {
         Account first = signService.signUp(username, password);
 
         // then
-        DuplicateException duplicateException = assertThrows(DuplicateException.class, () -> {
-            Account second = signService.signUp(username, password);
-        });
+        DuplicateResourceException duplicateResourceException = assertThrows(
+                DuplicateResourceException.class,
+                () -> signService.signUp(username, password),
+                () -> "중복된 username 사용하면 DuplicateResourceException 터진다.");
 
-        Object resource = duplicateException.getResource();
+        Object resource = duplicateResourceException.getResource();
 
-        assertEquals(resource, username);
+        assertEquals(resource, username, () -> "중복된 resource가 username임을 알려준다.");
     }
+
+    @DisplayName("로그인 - 존재하지 않는 ID로 로그인하면, 적절한 에러를 뱉어낸다.")
+    @Test
+    public void sign_in_with_not_exist_username() {
+        // given
+        String username = "NOTEXISTS";
+        String password = "password";
+
+        //when & then
+        NotFoundResourceException notFoundResourceException = assertThrows(
+                NotFoundResourceException.class,
+                () -> signService.signIn(username, password),
+                () -> "존재하지 않는 사용자가 로그인을 시도하면 NotFoundResourceException이 터진다.");
+
+        Object resource = notFoundResourceException.getResource();
+
+        assertEquals(resource, username, () -> "exception은 어떤 값이 존재하지 않았는지 알고있다.");
+    }
+
+    @DisplayName("로그인 - 비밀번호가 틀리면 적절한 에러를 뱉어낸다.")
+    @Test
+    public void sign_in_with_wrong_password() {
+        //given
+        String username = "tjsdydwn@gmail.com";
+        String password = "password";
+        signService.signUp(username, password);
+
+        //when & then
+        assertThrows(
+                InvalidPasswordException.class,
+                () -> signService.signIn(username, "diffrent password"),
+                () -> "password가 틀리면 InvalidPasswordException이 발생한다.");
+    }
+
+    @DisplayName("로그인 - 성공 테스트")
+    @Test
+    public void sign_in_success() {
+        //given
+        String username = "tjsdydwn@gmail.com";
+        String password = "password";
+        signService.signUp(username, password);
+
+        //when
+        Token token = signService.signIn(username, password);
+
+        //then
+        assertNotNull(token.getAccessToken(), () -> "로그인에 성공하면 access token을 발급받는다.");
+        assertNotNull(token.getRefreshToken(), () -> "로그인에 성공하면 refresh token을 발급받는다.");
+    }
+
 
 }

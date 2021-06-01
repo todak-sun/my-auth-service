@@ -68,6 +68,7 @@ public class TokenProvider implements InitializingBean {
 
     private String createToken(Long userId, String username, long expiration) {
         Assert.notNull(userId, "userId is required!");
+
         long now = System.currentTimeMillis();
 
         return Jwts.builder()

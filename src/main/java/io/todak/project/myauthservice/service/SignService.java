@@ -1,7 +1,10 @@
 package io.todak.project.myauthservice.service;
 
+import io.todak.project.myauthservice.domain.Token;
 import io.todak.project.myauthservice.entity.Account;
-import io.todak.project.myauthservice.exception.DuplicateException;
+import io.todak.project.myauthservice.exception.DuplicateResourceException;
+import io.todak.project.myauthservice.exception.InvalidPasswordException;
+import io.todak.project.myauthservice.exception.NotFoundResourceException;
 import io.todak.project.myauthservice.jwt.TokenProvider;
 import io.todak.project.myauthservice.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,15 +23,28 @@ public class SignService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void signIn(String username, String password) {
-        accountRepository.findByUsername(username);
+    public Token signIn(String username, String password) {
+        Account existAccount = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundResourceException(username));
+
+        if (!passwordEncoder.matches(password, existAccount.getPassword())) {
+            throw new InvalidPasswordException();
+        }
+
+        String accessToken = tokenProvider.generate(existAccount.getId(), existAccount.getUsername());
+        String refreshToken = tokenProvider.generateRefresh(existAccount.getId(), existAccount.getUsername());
+
+        return Token.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     @Transactional
     public Account signUp(String username, String password) {
 
         if (accountRepository.existsByUsername(username)) {
-            throw new DuplicateException(username);
+            throw new DuplicateResourceException(username);
         }
 
         Account account = Account.builder()
@@ -36,8 +52,7 @@ public class SignService {
                 .password(passwordEncoder.encode(password))
                 .build();
 
-        Account newAccount = accountRepository.save(account);
-        return newAccount;
+        return accountRepository.save(account);
     }
 
 }
