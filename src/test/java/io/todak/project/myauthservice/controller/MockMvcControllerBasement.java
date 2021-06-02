@@ -38,8 +38,7 @@ abstract class MockMvcControllerBasement {
         return action.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.transactionTime").exists())
                 .andExpect(jsonPath("$.transactionTime").isString())
-                .andExpect(jsonPath("$.error").exists())
-                .andExpect(jsonPath("$.error").isArray());
+                .andExpect(jsonPath("$.error").exists());
     }
 
     protected ResultActions assertWithResponseTemplate(ResultActions action) throws Exception {

@@ -81,9 +81,11 @@ class SignServiceTest {
                 () -> signService.signUp(username, password),
                 () -> "중복된 username 사용하면 DuplicateResourceException 터진다.");
 
+        String path = duplicateResourceException.getPath();
         Object resource = duplicateResourceException.getResource();
 
-        assertEquals(resource, username, () -> "중복된 resource가 username임을 알려준다.");
+        assertEquals(path, "username", "중복된 데이터가 어떤 데이터인지 알려준다.");
+        assertEquals(resource, username, () -> "중복된 resource의 값을 알려준다.");
     }
 
     @DisplayName("로그인 - 존재하지 않는 ID로 로그인하면, 적절한 에러를 뱉어낸다.")

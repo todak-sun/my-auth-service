@@ -44,13 +44,10 @@ public class SignService {
     public Account signUp(String username, String password) {
 
         if (accountRepository.existsByUsername(username)) {
-            throw new DuplicateResourceException(username);
+            throw new DuplicateResourceException("username", username);
         }
 
-        Account account = Account.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .build();
+        Account account = Account.with(username, passwordEncoder.encode(password));
 
         return accountRepository.save(account);
     }

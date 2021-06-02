@@ -1,6 +1,8 @@
 package io.todak.project.myauthservice.controller;
 
+import io.todak.project.myauthservice.repository.AccountRepository;
 import io.todak.project.myauthservice.service.SignService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,13 @@ class SignControllerTest extends MockMvcControllerBasement {
     @Autowired
     private SignService signService;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @AfterEach
+    public void afterEach() {
+        accountRepository.deleteAll();
+    }
 
     @DisplayName("회원가입 성공 테스트")
     @Test
@@ -76,6 +85,7 @@ class SignControllerTest extends MockMvcControllerBasement {
 
         assertWithErrorTemplate(perform)
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").isArray())
                 .andExpect(jsonPath("$.error[0]").exists())
                 .andExpect(jsonPath("$.error[0]").isMap())
                 .andExpect(jsonPath("$.error[0].field").exists())
@@ -106,6 +116,7 @@ class SignControllerTest extends MockMvcControllerBasement {
 
         assertWithErrorTemplate(perform)
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").isArray())
                 .andExpect(jsonPath("$.error[0]").exists())
                 .andExpect(jsonPath("$.error[0]").isMap())
                 .andExpect(jsonPath("$.error[0].field").exists())
@@ -137,6 +148,7 @@ class SignControllerTest extends MockMvcControllerBasement {
 
         assertWithErrorTemplate(perform)
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").isArray())
                 .andExpect(jsonPath("$.error[0]").exists())
                 .andExpect(jsonPath("$.error[0]").isMap())
                 .andExpect(jsonPath("$.error[0].field").exists())
@@ -154,32 +166,29 @@ class SignControllerTest extends MockMvcControllerBasement {
     public void sign_up_fail_duplicate_username() throws Exception {
         //TODO: 테스트 수정
         //given
-        String username = "tjsdydwn@gmail.com";
-        String password = "pwd";
-        String passwordRe = "pwd";
+        String username = VALID_USERNAME;
+        String password = VALID_PASSWORD;
+        String passwordRe = VALID_PASSWORD;
+
+        signService.signUp(username, password);
 
         Map<String, Object> requestMap = getUserMap(username, password, passwordRe);
-
-        String requestBody = objectMapper.writeValueAsString(requestMap);
 
         //when
         ResultActions perform = mvc.perform(post(SIGN_UP)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody));
+                .content(objectMapper.writeValueAsString(requestMap)));
 
         assertWithErrorTemplate(perform)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error[0]").exists())
-                .andExpect(jsonPath("$.error[0]").isMap())
-                .andExpect(jsonPath("$.error[0].field").exists())
-                .andExpect(jsonPath("$.error[0].field").isString())
-                .andExpect(jsonPath("$.error[0].field").value("password"))
-                .andExpect(jsonPath("$.error[0].rejectedValue").exists())
-                .andExpect(jsonPath("$.error[0].rejectedValue").isString())
-                .andExpect(jsonPath("$.error[0].rejectedValue").value(password))
-                .andExpect(jsonPath("$.error[0].message").exists())
-                .andExpect(jsonPath("$.error[0].message").isString());
+                .andExpect(jsonPath("$.error").exists())
+                .andExpect(jsonPath("$.error").isMap())
+                .andExpect(jsonPath("$.error.path").exists())
+                .andExpect(jsonPath("$.error.path").isString())
+                .andExpect(jsonPath("$.error.value").exists())
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.message").isString());
     }
 
     private Map<String, Object> getUserMap(String username, String password, String passwordRe) {

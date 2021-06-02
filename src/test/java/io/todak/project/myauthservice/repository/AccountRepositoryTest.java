@@ -10,7 +10,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,10 +45,10 @@ class AccountRepositoryTest {
     @Test
     public void save_with_create_date_time() {
         // given
-        Account account = Account.builder()
-                .username("todaksun@gmail.com")
-                .password("password")
-                .build();
+        String username = "todaksun@gmail.com";
+        String password = "password";
+        Account account = Account.with(username, password);
+
 
         // when
         Account newAccount = accountRepository.save(account);
@@ -62,10 +61,9 @@ class AccountRepositoryTest {
     @Test
     public void save_with_update_date_time() {
         // given
-        Account account = Account.builder()
-                .username("todaksun@gmail.com")
-                .password("password")
-                .build();
+        String username = "todaksun@gmail.com";
+        String password = "password";
+        Account account = Account.with(username, password);
 
         // when
         Account newAccount = accountRepository.save(account);
@@ -78,10 +76,10 @@ class AccountRepositoryTest {
     @Test
     public void updated_update_date_time_after_change_some() {
         // given
-        Account account = Account.builder()
-                .username("todaksun@gmail.com")
-                .password("password")
-                .build();
+        String username = "todaksun@gmail.com";
+        String password = "password";
+
+        Account account = Account.with(username, password);
 
         Account newAccount = accountRepository.save(account);
         Long accountId = newAccount.getId();

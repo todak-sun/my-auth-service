@@ -33,10 +33,17 @@ public class Account extends DateTimeEntity {
     @Getter
     private String password;
 
-    @Builder
-    public Account(String username, String password) {
+    @Builder(access = AccessLevel.PRIVATE)
+    private Account(String username, String password) {
         this.username = username;
         this.password = password;
+    }
+
+    public static Account with(String username, String password) {
+        return Account.builder()
+                .username(username)
+                .password(password)
+                .build();
     }
 
     // 비즈니스 메서드
