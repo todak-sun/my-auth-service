@@ -9,6 +9,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AttributeOverrides({
+        @AttributeOverride(name = "createdDateTime",
+                column = @Column(name = "ENROLLED_DATE_TIME")),
+        @AttributeOverride(name = "lastModifiedDateTime",
+                column = @Column(name = "UPDATED_DATE_TIME"))
+})
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 public class Account extends DateTimeEntity {

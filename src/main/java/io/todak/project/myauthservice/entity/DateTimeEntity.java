@@ -17,6 +17,6 @@ public abstract class DateTimeEntity {
     private LocalDateTime createdDateTime;
 
     @LastModifiedDate
-    private LocalDateTime updatedDateTime;
+    private LocalDateTime lastModifiedDateTime;
 
 }

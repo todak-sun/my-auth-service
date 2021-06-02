@@ -12,13 +12,13 @@ public class ErrorResponse<T> {
     private final T error;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String message;
-    private final LocalDateTime transactionTIme;
+    private final LocalDateTime transactionTime;
 
     @Builder
     private ErrorResponse(T error, String message) {
         this.error = error;
         this.message = message;
-        this.transactionTIme = LocalDateTime.now();
+        this.transactionTime = LocalDateTime.now();
     }
 
     public static <T> ErrorResponse<T> of(T content) {

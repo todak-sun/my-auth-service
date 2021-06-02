@@ -8,17 +8,15 @@ import java.time.LocalDateTime;
 
 public class SignUpModel {
 
+    @Getter
     @Setter
     public static class Req {
-        @Getter
         private String username;
-        @Getter
         private String password;
-
         private String passwordRe;
 
-        public boolean isSamePassword() {
-            return this.password.equals(passwordRe);
+        public boolean isDiffrentPassword() {
+            return !this.password.equals(passwordRe);
         }
     }
 

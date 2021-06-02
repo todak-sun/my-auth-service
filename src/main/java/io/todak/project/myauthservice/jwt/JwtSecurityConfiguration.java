@@ -6,7 +6,6 @@ import org.springframework.security.web.DefaultSecurityFilterChain;
 
 public class JwtSecurityConfiguration extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
-
     @Override
     public void configure(HttpSecurity builder) throws Exception {
 

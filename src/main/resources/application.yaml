@@ -12,10 +12,13 @@ spring:
         default_batch_fetch_size: 1000
   flyway:
     enabled: true
+    baseline-version: 0
+    baseline-on-migrate: true
   redis:
     port: 6379
     host: 127.0.0.1
 
 jwt:
-  secret: JAIUwkdjf238fJDASLdkbhzVDseordi
-  token-validity-in-milliseconds: 100000
+  secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
+  token-validity-in-milliseconds: 86400
+  refresh-token-validity-in-milliseconds: 604800

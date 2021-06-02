@@ -58,7 +58,7 @@ class SignServiceTest {
         assertNotNull(newAccount.getPassword(), () -> "패스워드는 null이 아니다.");
         assertNotNull(newAccount.getUsername(), () -> "username은 null이 아니다.");
         assertNotNull(newAccount.getCreatedDateTime(), () -> "회원가입한 시간이 기록된다.");
-        assertNotNull(newAccount.getUpdatedDateTime(), () -> "회원가입한 시간이 updateDateTime에도 함께 기록된다.");
+        assertNotNull(newAccount.getLastModifiedDateTime(), () -> "회원가입한 시간이 updateDateTime에도 함께 기록된다.");
 
         assertNotEquals(newAccount.getPassword(), password, () -> "회원가입시 입력한 password와, DB에 저장된 password는 다르다.");
 

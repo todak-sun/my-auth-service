@@ -71,7 +71,7 @@ class AccountRepositoryTest {
         Account newAccount = accountRepository.save(account);
 
         // then
-        assertNotNull(newAccount.getUpdatedDateTime());
+        assertNotNull(newAccount.getLastModifiedDateTime());
     }
 
     @DisplayName("Entity를 수정하면, updateDateTime도 바뀐다.")
@@ -85,7 +85,7 @@ class AccountRepositoryTest {
 
         Account newAccount = accountRepository.save(account);
         Long accountId = newAccount.getId();
-        LocalDateTime before = newAccount.getUpdatedDateTime();
+        LocalDateTime before = newAccount.getLastModifiedDateTime();
 
         em.flush();
         em.clear();
@@ -94,7 +94,7 @@ class AccountRepositoryTest {
         foundedAccount.changePassword("newPassword");
         em.flush();
         em.clear();
-        LocalDateTime after = foundedAccount.getUpdatedDateTime();
+        LocalDateTime after = foundedAccount.getLastModifiedDateTime();
 
         assertNotEquals(before, after);
     }
