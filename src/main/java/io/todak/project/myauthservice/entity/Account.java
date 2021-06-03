@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
 
@@ -30,7 +31,6 @@ public class Account extends DateTimeEntity {
     private String username;
 
     @Column(unique = true, nullable = false)
-    @Getter
     private String password;
 
     @Builder(access = AccessLevel.PRIVATE)
@@ -39,16 +39,19 @@ public class Account extends DateTimeEntity {
         this.password = password;
     }
 
-    public static Account with(String username, String password) {
+    public static Account create(String username, String password, PasswordEncoder passwordEncoder) {
         return Account.builder()
                 .username(username)
-                .password(password)
+                .password(passwordEncoder.encode(password))
                 .build();
     }
 
     // 비즈니스 메서드
+    public boolean hasSamePassword(String password, PasswordEncoder passwordEncoder) {
+        return passwordEncoder.matches(password, this.password);
+    }
 
-    public void changePassword(String newPassword) {
-        this.password = newPassword;
+    public void changePassword(String newPassword, PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(newPassword);
     }
 }

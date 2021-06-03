@@ -1,4 +1,4 @@
-package io.todak.project.myauthservice.controller.model;
+package io.todak.project.myauthservice.web.model.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

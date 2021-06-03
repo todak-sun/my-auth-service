@@ -1,4 +1,4 @@
-package io.todak.project.myauthservice.controller;
+package io.todak.project.myauthservice.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,17 +34,25 @@ abstract class MockMvcControllerBasement {
                 .build();
     }
 
-    protected ResultActions assertWithErrorTemplate(ResultActions action) throws Exception {
-        return action.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+    protected ResultActions assertWithErrorDefaultTemplate(ResultActions actions) throws Exception {
+        return actions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.transactionTime").exists())
-                .andExpect(jsonPath("$.transactionTime").isString())
+                .andExpect(jsonPath("$.transactionTime").isString());
+    }
+
+    protected ResultActions assertWithErrorTemplateWithDetailError(ResultActions actions) throws Exception {
+        return assertWithErrorDefaultTemplate(actions)
                 .andExpect(jsonPath("$.error").exists());
     }
 
-    protected ResultActions assertWithResponseTemplate(ResultActions action) throws Exception {
-        return action.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+    protected ResultActions assertWithResponseDefaultTemplate(ResultActions actions) throws Exception {
+        return actions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.transactionTime").exists())
-                .andExpect(jsonPath("$.transactionTime").isString())
+                .andExpect(jsonPath("$.transactionTime").isString());
+    }
+
+    protected ResultActions assertWithResponseTemplateWithContent(ResultActions actions) throws Exception {
+        return assertWithResponseDefaultTemplate(actions)
                 .andExpect(jsonPath("$.content").exists());
     }
 

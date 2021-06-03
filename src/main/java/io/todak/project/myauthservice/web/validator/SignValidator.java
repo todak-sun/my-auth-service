@@ -1,7 +1,7 @@
-package io.todak.project.myauthservice.controller.validator;
+package io.todak.project.myauthservice.web.validator;
 
-import io.todak.project.myauthservice.controller.model.LoginRequest;
-import io.todak.project.myauthservice.controller.model.SignUpModel;
+import io.todak.project.myauthservice.web.model.request.LoginRequest;
+import io.todak.project.myauthservice.web.model.SignUpModel;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 

@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @Slf4j
@@ -25,13 +25,28 @@ class TokenProviderTest {
         assertNotNull(tokenProvider);
     }
 
-    @DisplayName("wow")
+    @DisplayName("tokenProvider의 createToken을 테스트")
     @Test
     public void create_token_test() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        // given
+        Long userId = 1L;
+        String username = "todaksun@gmail.com";
+
         Method createToken = TokenProvider.class.getDeclaredMethod("createToken", Long.class, String.class, long.class);
         createToken.setAccessible(true);
-        Object result = createToken.invoke(tokenProvider, 1L, "todaksun@gmail.com", 1000L);
-        log.info("token : {}", result);
+
+        // when
+        String jwt = (String) createToken.invoke(tokenProvider, userId, username, 1000L);
+        log.info("token : {}", jwt);
+
+
+        //then
+        assertAll(
+                "토큰에 포함된 정보 확인",
+                () -> assertEquals(userId, tokenProvider.extractUserId(jwt), "userId가 있다."),
+                () -> assertEquals(username, tokenProvider.extractUsername(jwt), "username이 있다."),
+                () -> assertFalse(tokenProvider.isTokenExpired(jwt), "토큰 유효시간이 남아있다.")
+        );
     }
 
 }

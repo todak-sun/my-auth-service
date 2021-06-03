@@ -1,4 +1,4 @@
-package io.todak.project.myauthservice.controller.model;
+package io.todak.project.myauthservice.web.model;
 
 import lombok.Getter;
 import lombok.Setter;

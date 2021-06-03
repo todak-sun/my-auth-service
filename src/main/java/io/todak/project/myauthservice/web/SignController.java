@@ -1,9 +1,10 @@
-package io.todak.project.myauthservice.controller;
+package io.todak.project.myauthservice.web;
 
-import io.todak.project.myauthservice.controller.model.LoginRequest;
-import io.todak.project.myauthservice.controller.model.Response;
-import io.todak.project.myauthservice.controller.model.SignUpModel;
-import io.todak.project.myauthservice.controller.validator.SignValidator;
+import io.todak.project.myauthservice.web.model.SignUpModel;
+import io.todak.project.myauthservice.web.model.request.LoginRequest;
+import io.todak.project.myauthservice.web.model.response.Response;
+import io.todak.project.myauthservice.web.model.response.TokenResponse;
+import io.todak.project.myauthservice.web.validator.SignValidator;
 import io.todak.project.myauthservice.domain.Token;
 import io.todak.project.myauthservice.entity.Account;
 import io.todak.project.myauthservice.exception.InvalidRequestException;
@@ -34,8 +35,10 @@ public class SignController {
 
         Token token = signService.signIn(request.getUsername(), request.getPassword());
 
+        TokenResponse response = new TokenResponse(token.getAccessToken(), token.getRefreshToken());
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(Response.of(token));
+                .body(Response.of(response));
     }
 
     @PostMapping("/sign-up")

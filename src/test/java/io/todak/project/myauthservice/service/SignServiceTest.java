@@ -4,7 +4,7 @@ import io.todak.project.myauthservice.domain.Token;
 import io.todak.project.myauthservice.entity.Account;
 import io.todak.project.myauthservice.exception.DuplicateResourceException;
 import io.todak.project.myauthservice.exception.InvalidPasswordException;
-import io.todak.project.myauthservice.exception.NotFoundResourceException;
+import io.todak.project.myauthservice.exception.UsernameNotFoundException;
 import io.todak.project.myauthservice.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -55,12 +55,9 @@ class SignServiceTest {
 
         //then
         assertNotNull(newAccount.getId(), () -> "새로 부여된 id가 있다.");
-        assertNotNull(newAccount.getPassword(), () -> "패스워드는 null이 아니다.");
         assertNotNull(newAccount.getUsername(), () -> "username은 null이 아니다.");
         assertNotNull(newAccount.getCreatedDateTime(), () -> "회원가입한 시간이 기록된다.");
         assertNotNull(newAccount.getLastModifiedDateTime(), () -> "회원가입한 시간이 updateDateTime에도 함께 기록된다.");
-
-        assertNotEquals(newAccount.getPassword(), password, () -> "회원가입시 입력한 password와, DB에 저장된 password는 다르다.");
 
         log.info("id : {}", newAccount.getId());
     }
@@ -96,14 +93,10 @@ class SignServiceTest {
         String password = "password";
 
         //when & then
-        NotFoundResourceException notFoundResourceException = assertThrows(
-                NotFoundResourceException.class,
+        UsernameNotFoundException usernameNotFoundException = assertThrows(
+                UsernameNotFoundException.class,
                 () -> signService.signIn(username, password),
-                () -> "존재하지 않는 사용자가 로그인을 시도하면 NotFoundResourceException이 터진다.");
-
-        Object resource = notFoundResourceException.getResource();
-
-        assertEquals(resource, username, () -> "exception은 어떤 값이 존재하지 않았는지 알고있다.");
+                () -> "존재하지 않는 사용자가 로그인을 시도하면 UsernameNotFoundException");
     }
 
     @DisplayName("로그인 - 비밀번호가 틀리면 적절한 에러를 뱉어낸다.")

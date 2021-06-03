@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -24,6 +25,9 @@ class AccountRepositoryTest {
 
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Autowired
     EntityManager em;
@@ -47,7 +51,7 @@ class AccountRepositoryTest {
         // given
         String username = "todaksun@gmail.com";
         String password = "password";
-        Account account = Account.with(username, password);
+        Account account = Account.create(username, password, passwordEncoder);
 
 
         // when
@@ -63,7 +67,7 @@ class AccountRepositoryTest {
         // given
         String username = "todaksun@gmail.com";
         String password = "password";
-        Account account = Account.with(username, password);
+        Account account = Account.create(username, password, passwordEncoder);
 
         // when
         Account newAccount = accountRepository.save(account);
@@ -79,7 +83,7 @@ class AccountRepositoryTest {
         String username = "todaksun@gmail.com";
         String password = "password";
 
-        Account account = Account.with(username, password);
+        Account account = Account.create(username, password, passwordEncoder);
 
         Account newAccount = accountRepository.save(account);
         Long accountId = newAccount.getId();
@@ -89,7 +93,7 @@ class AccountRepositoryTest {
         em.clear();
 
         Account foundedAccount = accountRepository.findById(accountId).get();
-        foundedAccount.changePassword("newPassword");
+        foundedAccount.changePassword("newPassword", passwordEncoder);
         em.flush();
         em.clear();
         LocalDateTime after = foundedAccount.getLastModifiedDateTime();

@@ -4,7 +4,7 @@ import io.todak.project.myauthservice.domain.Token;
 import io.todak.project.myauthservice.entity.Account;
 import io.todak.project.myauthservice.exception.DuplicateResourceException;
 import io.todak.project.myauthservice.exception.InvalidPasswordException;
-import io.todak.project.myauthservice.exception.NotFoundResourceException;
+import io.todak.project.myauthservice.exception.UsernameNotFoundException;
 import io.todak.project.myauthservice.jwt.TokenProvider;
 import io.todak.project.myauthservice.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +25,9 @@ public class SignService {
 
     public Token signIn(String username, String password) {
         Account existAccount = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new NotFoundResourceException(username));
+                .orElseThrow(UsernameNotFoundException::new);
 
-        if (!passwordEncoder.matches(password, existAccount.getPassword())) {
+        if (!existAccount.hasSamePassword(password, passwordEncoder)) {
             throw new InvalidPasswordException();
         }
 
@@ -47,7 +47,7 @@ public class SignService {
             throw new DuplicateResourceException("username", username);
         }
 
-        Account account = Account.with(username, passwordEncoder.encode(password));
+        Account account = Account.create(username, password, passwordEncoder);
 
         return accountRepository.save(account);
     }

@@ -1,5 +1,6 @@
-package io.todak.project.myauthservice.controller;
+package io.todak.project.myauthservice.web;
 
+import io.todak.project.myauthservice.jwt.TokenProvider;
 import io.todak.project.myauthservice.repository.AccountRepository;
 import io.todak.project.myauthservice.service.SignService;
 import org.junit.jupiter.api.AfterEach;
@@ -29,6 +30,9 @@ class SignControllerTest extends MockMvcControllerBasement {
     private final static String SIGN_IN = "/sign-in";
 
     @Autowired
+    TokenProvider tokenProvider;
+
+    @Autowired
     private SignService signService;
 
     @Autowired
@@ -54,7 +58,7 @@ class SignControllerTest extends MockMvcControllerBasement {
                 .content(requestBody));
 
         //then
-        assertWithResponseTemplate(perform)
+        assertWithResponseTemplateWithContent(perform)
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.content").isMap())
                 .andExpect(jsonPath("$.content.userId").exists())
@@ -83,7 +87,7 @@ class SignControllerTest extends MockMvcControllerBasement {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody));
 
-        assertWithErrorTemplate(perform)
+        assertWithErrorTemplateWithDetailError(perform)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").isArray())
                 .andExpect(jsonPath("$.error[0]").exists())
@@ -114,7 +118,7 @@ class SignControllerTest extends MockMvcControllerBasement {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody));
 
-        assertWithErrorTemplate(perform)
+        assertWithErrorTemplateWithDetailError(perform)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").isArray())
                 .andExpect(jsonPath("$.error[0]").exists())
@@ -146,7 +150,7 @@ class SignControllerTest extends MockMvcControllerBasement {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody));
 
-        assertWithErrorTemplate(perform)
+        assertWithErrorTemplateWithDetailError(perform)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").isArray())
                 .andExpect(jsonPath("$.error[0]").exists())
@@ -164,15 +168,13 @@ class SignControllerTest extends MockMvcControllerBasement {
     @DisplayName("회원가입 실패 테스트 - 중복된 아이디로 가입을 원하는 경우")
     @Test
     public void sign_up_fail_duplicate_username() throws Exception {
-        //TODO: 테스트 수정
         //given
         String username = VALID_USERNAME;
         String password = VALID_PASSWORD;
-        String passwordRe = VALID_PASSWORD;
 
         signService.signUp(username, password);
 
-        Map<String, Object> requestMap = getUserMap(username, password, passwordRe);
+        Map<String, Object> requestMap = getUserMap(username, password, VALID_PASSWORD);
 
         //when
         ResultActions perform = mvc.perform(post(SIGN_UP)
@@ -180,15 +182,84 @@ class SignControllerTest extends MockMvcControllerBasement {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestMap)));
 
-        assertWithErrorTemplate(perform)
+        assertWithErrorTemplateWithDetailError(perform)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").exists())
                 .andExpect(jsonPath("$.error").isMap())
                 .andExpect(jsonPath("$.error.path").exists())
                 .andExpect(jsonPath("$.error.path").isString())
+                .andExpect(jsonPath("$.error.path").value("username"))
                 .andExpect(jsonPath("$.error.value").exists())
+                .andExpect(jsonPath("$.error.value").value(username))
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.message").isString());
+    }
+
+    @DisplayName("로그인 성공 테스트")
+    @Test
+    public void sign_in_success() throws Exception {
+        // TODO: TokenProvider 까서, 내용까지 확인해볼 것.
+        //given
+        String username = VALID_USERNAME;
+        String password = VALID_PASSWORD;
+        signService.signUp(username, password);
+
+        //when
+        ResultActions perform = mvc.perform(post(SIGN_IN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(getLoginMap(username, password)))
+        );
+
+        //then
+        assertWithResponseTemplateWithContent(perform)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.refreshToken").exists())
+                .andExpect(jsonPath("$.content.accessToken").exists());
+    }
+
+    @DisplayName("로그인 실패 테스트 - 비밀번호가 틀렸을 때")
+    @Test
+    public void sign_in_fail_with_invalid_password() throws Exception {
+        //given
+        String username = VALID_USERNAME;
+        signService.signUp(username, VALID_PASSWORD);
+
+        //when
+        ResultActions perform = mvc.perform(post(SIGN_IN)
+                .content(objectMapper.writeValueAsString(getLoginMap(username, VALID_ANOTHER_PASSWORD)))
+                .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        //then
+        assertWithErrorDefaultTemplate(perform)
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.message").isString());
+    }
+
+    @DisplayName("로그인 실패 테스트 - 없는 계정으로 로그인 시도 할 때")
+    @Test
+    public void sign_in_fail_with_username_not_existed() throws Exception {
+
+        //when
+        ResultActions perform = mvc.perform(post(SIGN_IN)
+                .content(objectMapper.writeValueAsString(getLoginMap(VALID_USERNAME, VALID_ANOTHER_PASSWORD)))
+                .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        //then
+        assertWithErrorDefaultTemplate(perform)
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.message").isString());
+    }
+
+
+    private Map<String, Object> getLoginMap(String username, String password) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("username", username);
+        map.put("password", password);
+        return map;
     }
 
     private Map<String, Object> getUserMap(String username, String password, String passwordRe) {
