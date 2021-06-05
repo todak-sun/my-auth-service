@@ -23,7 +23,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-//        resolveToken(request).
+        resolveToken(request);
     }
 
     private Optional<String> resolveToken(HttpServletRequest request) {

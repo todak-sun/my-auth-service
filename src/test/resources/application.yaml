@@ -13,8 +13,10 @@ spring:
     show-sql: true
   flyway:
     enabled: false
-
+  redis:
+    host: localhost
+    port: 16379
 jwt:
   secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
-  token-validity-in-milliseconds: 86400
-  refresh-token-validity-in-milliseconds: 604800
+  token-validity-in-hour: 24
+  refresh-token-validity-in-hour: 168

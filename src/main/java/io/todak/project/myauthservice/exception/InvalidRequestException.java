@@ -10,7 +10,7 @@ public class InvalidRequestException extends RuntimeException {
     @Getter
     private final List<FieldError> errors;
 
-    public InvalidRequestException(List<FieldError> fieldErrors) {
-        this.errors = fieldErrors;
+    public InvalidRequestException(List<FieldError> errors) {
+        this.errors = errors;
     }
 }

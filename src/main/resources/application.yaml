@@ -18,8 +18,7 @@ spring:
   redis:
     port: 6379
     host: 127.0.0.1
-
 jwt:
   secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
-  token-validity-in-milliseconds: 86400
-  refresh-token-validity-in-milliseconds: 604800
+  token-validity-in-hour: 24
+  refresh-token-validity-in-hour: 168

@@ -8,18 +8,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("jwt")
 public class JwtConfigurationProperty {
 
+    private static final long HOUR = 1000L * 60L * 60L;
+
     @Getter
     private String secret;
 
-    private long tokenValidityInMilliseconds;
-    private long refreshTokenValidityInMilliseconds;
+    private long tokenValidityInHour;
+    private long refreshTokenValidityInHour;
 
     public long getTokenValidityTime() {
-        return this.tokenValidityInMilliseconds * 1000L;
+        return this.tokenValidityInHour * HOUR;
     }
 
     public long getRefreshTokenValidityTime() {
-        return this.refreshTokenValidityInMilliseconds * 1000L;
+        return this.refreshTokenValidityInHour * HOUR;
     }
 
 }
