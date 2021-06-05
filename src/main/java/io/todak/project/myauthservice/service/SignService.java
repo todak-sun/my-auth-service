@@ -7,6 +7,7 @@ import io.todak.project.myauthservice.exception.InvalidPasswordException;
 import io.todak.project.myauthservice.exception.UsernameNotFoundException;
 import io.todak.project.myauthservice.jwt.TokenProvider;
 import io.todak.project.myauthservice.repository.AccountRepository;
+import io.todak.project.myauthservice.repository.redis.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SignService {
 
     private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -33,6 +35,8 @@ public class SignService {
 
         String accessToken = tokenProvider.generate(existAccount.getId(), existAccount.getUsername());
         String refreshToken = tokenProvider.generateRefresh(existAccount.getId(), existAccount.getUsername());
+
+        refreshTokenRepository.save(refreshToken, existAccount.getId());
 
         return Token.builder()
                 .accessToken(accessToken)

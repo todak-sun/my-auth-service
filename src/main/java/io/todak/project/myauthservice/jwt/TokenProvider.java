@@ -6,10 +6,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.todak.project.myauthservice.security.SecurityAccount;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -22,10 +25,11 @@ import java.util.Date;
 @EnableConfigurationProperties(JwtConfigurationProperty.class)
 public class TokenProvider implements InitializingBean {
 
+    private final JwtConfigurationProperty property;
+
     private final static String ACCESS_TOKEN_NAME = "accessToken";
     private final static String REFERESH_TOKEN_NAME = "refreshToken";
 
-    private final JwtConfigurationProperty property;
 
     private Key key;
 
@@ -34,15 +38,6 @@ public class TokenProvider implements InitializingBean {
         byte[] keyBytes = Decoders.BASE64.decode(property.getSecret());
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
-
-    public String extractUsername(String token) {
-        return extractAllClaims(token).get("username", String.class);
-    }
-
-    public Long extractUserId(String token) {
-        return Long.parseLong(extractAllClaims(token).getSubject());
-    }
-
 
     public String generate(Long userId, String username) {
         return createToken(userId, username, property.getTokenValidityTime());
@@ -55,6 +50,18 @@ public class TokenProvider implements InitializingBean {
     public boolean isTokenExpired(String token) {
         final Date expiration = extractAllClaims(token).getExpiration();
         return expiration.before(new Date());
+    }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = extractAllClaims(token);
+        long userId = Long.parseLong(claims.getSubject());
+        String username = claims.get("username", String.class);
+        return new UsernamePasswordAuthenticationToken(new SecurityAccount(userId, username), token);
+    }
+
+    public Long extractUserId(String token) {
+        return Long.parseLong(extractAllClaims(token)
+                .getSubject());
     }
 
 

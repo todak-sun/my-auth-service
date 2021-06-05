@@ -1,6 +1,9 @@
 package io.todak.project.myauthservice.security;
 
 import io.todak.project.myauthservice.jwt.JwtSecurityConfiguration;
+import io.todak.project.myauthservice.jwt.TokenProvider;
+import io.todak.project.myauthservice.repository.redis.RefreshTokenRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,8 +14,12 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @EnableWebSecurity
+@RequiredArgsConstructor
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -29,6 +36,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.csrf()
                 .disable();
 
+        http.httpBasic()
+                .disable()
+                .formLogin()
+                .disable();
+
+
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
@@ -39,6 +52,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .anyRequest().authenticated();
 
-        http.apply(new JwtSecurityConfiguration());
+        http.apply(new JwtSecurityConfiguration(tokenProvider, refreshTokenRepository));
     }
 }
