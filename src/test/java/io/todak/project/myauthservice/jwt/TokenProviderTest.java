@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.Authentication;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -41,15 +40,14 @@ class TokenProviderTest {
         String jwt = (String) createToken.invoke(tokenProvider, userId, username, 1000L);
         log.info("token : {}", jwt);
 
-        Authentication authentication = tokenProvider.getAuthentication(jwt);
+        SecurityAccount account = tokenProvider.extractSecurityAccount(jwt);
 
-        SecurityAccount account = (SecurityAccount) authentication.getPrincipal();
         //then
         assertAll(
                 "토큰에 포함된 정보 확인",
                 () -> assertEquals(userId, account.getUserId(), "userId가 있다."),
                 () -> assertEquals(username, account.getUsername(), "username이 있다."),
-                () -> assertFalse(tokenProvider.isTokenExpired(jwt), "토큰 유효시간이 남아있다.")
+                () -> assertFalse(tokenProvider.assertValid(jwt), "토큰 유효시간이 남아있다.")
         );
     }
 

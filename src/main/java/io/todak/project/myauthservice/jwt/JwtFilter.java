@@ -1,11 +1,11 @@
 package io.todak.project.myauthservice.jwt;
 
-import io.todak.project.myauthservice.repository.redis.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -14,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Optional;
 
 @Slf4j
@@ -21,47 +22,34 @@ import java.util.Optional;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final static String BEARER = "Bearer ";
-    private final static String REFRESH_TOKEN = "Refresh-Token";
 
     private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         resolveAuthorizationToken(request).ifPresent(
                 (authorizationToken) -> {
                     log.info("token exist : {}", authorizationToken);
-
-                    if (!tokenProvider.isTokenExpired(authorizationToken)) {
-                        // 토큰이 만료되지 않은 경우.
-                        memoInSecurityContextHolder(authorizationToken);
-                    } else {
-                        //TODO: 토큰이 있지만, expired 된 경우
-                        resolveRefreshToken(request).ifPresent((refreshToken) -> {
-                            refreshTokenRepository.findUserIdByToken(refreshToken)
-                                    .filter(userId -> userId.equals(tokenProvider.extractUserId(refreshToken)))
-                                    .ifPresent(userId -> {
-
-                                    });
-
-                        });
+                    if (!tokenProvider.assertValid(authorizationToken)) {
+                        log.info("token not expired. put SecurityContextHolder");
+                        memoInSecurityContextHolder(authorizationToken, request);
                     }
                 });
         filterChain.doFilter(request, response);
     }
 
-    private void memoInSecurityContextHolder(String token) {
-        SecurityContextHolder.getContext().setAuthentication(tokenProvider.getAuthentication(token));
+    private void memoInSecurityContextHolder(String token, HttpServletRequest request) {
+        var account = tokenProvider.extractSecurityAccount(token);
+        var authenticationToken = new UsernamePasswordAuthenticationToken(account, token, Collections.emptyList());
+        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        log.info("usernamePasswordAuthenticationToken : {}", authenticationToken);
+
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 
     private Optional<String> resolveAuthorizationToken(HttpServletRequest request) {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         return resolveJWT(authHeader);
-    }
-
-    private Optional<String> resolveRefreshToken(HttpServletRequest request) {
-        String refreshTokenHeader = request.getHeader(REFRESH_TOKEN);
-        return resolveJWT(refreshTokenHeader);
     }
 
     private Optional<String> resolveJWT(String token) {

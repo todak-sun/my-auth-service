@@ -9,10 +9,13 @@ public class SecurityAccount extends User {
 
     @Getter
     private final Long userId;
+    @Getter
+    private final SecurityAccount account;
 
     public SecurityAccount(Long userId, String username) {
         super(username, "", Collections.emptyList());
         this.userId = userId;
+        account = this;
     }
 
 }
