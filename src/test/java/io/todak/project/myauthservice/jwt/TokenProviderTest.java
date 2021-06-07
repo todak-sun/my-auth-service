@@ -37,7 +37,7 @@ class TokenProviderTest {
         createToken.setAccessible(true);
 
         // when
-        String jwt = (String) createToken.invoke(tokenProvider, userId, username, 1000L);
+        String jwt = (String) createToken.invoke(tokenProvider, userId, username, 18000L);
         log.info("token : {}", jwt);
 
         SecurityAccount account = tokenProvider.extractSecurityAccount(jwt);
@@ -47,7 +47,7 @@ class TokenProviderTest {
                 "토큰에 포함된 정보 확인",
                 () -> assertEquals(userId, account.getUserId(), "userId가 있다."),
                 () -> assertEquals(username, account.getUsername(), "username이 있다."),
-                () -> assertFalse(tokenProvider.assertValid(jwt), "토큰 유효시간이 남아있다.")
+                () -> assertTrue(tokenProvider.assertValid(jwt), "토큰이 유효하다")
         );
     }
 

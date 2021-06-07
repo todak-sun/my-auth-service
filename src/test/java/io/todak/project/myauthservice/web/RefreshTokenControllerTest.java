@@ -16,13 +16,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class AuthControllerTest extends MockMvcControllerBasement {
-
-    @Autowired
-    TokenProvider tokenProvider;
+class RefreshTokenControllerTest extends MockMvcControllerBasement {
 
     @Autowired
     SignService signService;
@@ -30,47 +28,41 @@ class AuthControllerTest extends MockMvcControllerBasement {
     @Autowired
     AccountRepository accountRepository;
 
+    @Autowired
+    TokenProvider tokenProvider;
+
     @AfterEach
     public void afterEach() {
         accountRepository.deleteAll();
     }
 
-    @DisplayName("존재하는 access_token으로 인증에 통과한 경우")
+    @DisplayName("refersh token을 성공적으로 발급받는 케이스")
     @Test
-    public void auth_success_with_access_token() throws Exception {
-        //given
-        String username = "tjsdydwn@gmail.com";
-        String password = "abcd@1234";
-
-        signService.signUp(username, password);
-        Token token = signService.signIn(username, password);
-
-        //when
-        ResultActions perform = mvc.perform(get("/auth")
-                .headers(authHeader(token.getAccessToken())));
-
-        //then
-        perform.andExpect(status().isOk());
-    }
-
-    @DisplayName("access_token이 expired 된 경우")
-    @Test
-    public void auth_success_then_recive_new_tokens() throws Exception {
+    public void refresh_token_success() throws Exception {
         //given
         String username = "tjsdydwn@gmail.com";
         String password = "abcd@1234";
 
         Account account = signService.signUp(username, password);
-        signService.signIn(username, password);
+        Token token = signService.signIn(username, password);
 
         String accessToken = generateToken(account.getId(), account.getUsername(), 1L);
 
         //when
-        ResultActions perform = mvc.perform(get("/auth").
-                headers(authHeader(accessToken)));
+        HttpHeaders httpHeaders = authHeader(accessToken);
+        httpHeaders.put(TokenProvider.REFERESH_TOKEN_HEADER, List.of(token.getRefreshToken()));
+
+        ResultActions perform = mvc.perform(
+                post("/token/refresh")
+                        .headers(httpHeaders)
+        );
 
         //then
-        perform.andExpect(status().isForbidden());
+        assertWithResponseTemplateWithContent(perform)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.accessToken").exists())
+                .andExpect(jsonPath("$.content.refreshToken").exists())
+        ;
     }
 
     private HttpHeaders authHeader(String accessToken) {
@@ -84,6 +76,5 @@ class AuthControllerTest extends MockMvcControllerBasement {
         createToken.setAccessible(true);
         return (String) createToken.invoke(tokenProvider, userId, username, expired);
     }
-
 
 }

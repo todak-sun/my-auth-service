@@ -46,7 +46,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeRequests()
-                .antMatchers("/actuator/**", "/sign-up", "/sign-in")
+                .antMatchers(
+                        "/actuator/**",
+                        "/sign-up",
+                        "/sign-in",
+                        "/token/refresh")
                 .permitAll();
 
         http.authorizeRequests()

@@ -30,6 +30,11 @@ public class RefreshTokenRepository {
         this.valueOps.set(token, id, Duration.ofMillis(property.getRefreshTokenValidityTime()));
     }
 
+    public boolean delete(String key) {
+        log.info("key : {}", key);
+        return redisTemplate.delete(key);
+    }
+
     public Optional<Long> findUserIdByToken(String token) {
         return Optional.ofNullable(this.valueOps.get(token));
     }

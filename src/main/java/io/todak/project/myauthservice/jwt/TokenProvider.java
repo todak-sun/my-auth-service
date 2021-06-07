@@ -1,11 +1,9 @@
 package io.todak.project.myauthservice.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import io.todak.project.myauthservice.security.SecurityAccount;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,12 +20,9 @@ import java.util.Date;
 @Component
 @EnableConfigurationProperties(JwtConfigurationProperty.class)
 public class TokenProvider implements InitializingBean {
+    public final static String REFERESH_TOKEN_HEADER = "Refresh-Token";
 
     private final JwtConfigurationProperty property;
-
-    private final static String ACCESS_TOKEN_NAME = "accessToken";
-    private final static String REFERESH_TOKEN_NAME = "refreshToken";
-
     private Key key;
 
     @Override
@@ -45,9 +40,25 @@ public class TokenProvider implements InitializingBean {
     }
 
     public boolean assertValid(String token) {
-        final Date expiration = extractAllClaims(token).getExpiration();
+        Claims claims = null;
+        try {
+            claims = extractAllClaims(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            e.printStackTrace();
+            log.error("잘못된 형식의 토큰");
+        } catch (ExpiredJwtException e) {
+            log.error(e.getMessage());
+            log.error("만료된 토큰");
+        } catch (UnsupportedJwtException e) {
+            log.error(e.getMessage());
+            log.error("지원되지 않는 Jwt 형식");
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
+            log.error("잘못된 토큰");
+        }
 
-        return expiration.before(new Date());
+        return false;
     }
 
     public SecurityAccount extractSecurityAccount(String token) {
@@ -58,8 +69,7 @@ public class TokenProvider implements InitializingBean {
     }
 
 
-    private Claims extractAllClaims(String token) throws ExpiredJwtException {
-        //TODO: 에러처리
+    private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

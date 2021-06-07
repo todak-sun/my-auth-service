@@ -30,7 +30,8 @@ public class JwtFilter extends OncePerRequestFilter {
         resolveAuthorizationToken(request).ifPresent(
                 (authorizationToken) -> {
                     log.info("token exist : {}", authorizationToken);
-                    if (!tokenProvider.assertValid(authorizationToken)) {
+                    log.info("check validation : {} ", tokenProvider.assertValid(authorizationToken));
+                    if (tokenProvider.assertValid(authorizationToken)) {
                         log.info("token not expired. put SecurityContextHolder");
                         memoInSecurityContextHolder(authorizationToken, request);
                     }

@@ -38,5 +38,12 @@ class RefreshTokenRepositoryTest {
         assertEquals(userId, userIdByToken.get());
     }
 
+    @DisplayName("없는 키를 지우는 테스트")
+    @Test
+    public void delete_with_not_exsist_key(){
+        boolean not_exsit = repository.delete("not_exsit");
+        assertFalse(not_exsit);
+    }
+
 
 }
