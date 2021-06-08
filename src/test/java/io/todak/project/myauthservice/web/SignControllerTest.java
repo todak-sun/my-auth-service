@@ -8,12 +8,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,7 +69,27 @@ class SignControllerTest extends MockMvcControllerBasement {
                 .andExpect(jsonPath("$.content.username").exists())
                 .andExpect(jsonPath("$.content.username").isString())
                 .andExpect(jsonPath("$.content.enrolledAt").exists())
-                .andExpect(jsonPath("$.content.enrolledAt").isString());
+                .andExpect(jsonPath("$.content.enrolledAt").isString())
+                .andDo(document(
+                        "",
+                        requestBody(requestMap),
+                        responseBody(),
+                        requestFields(
+                                fieldWithPath("username").description("계정명").type(JsonFieldType.STRING),
+                                fieldWithPath("password").description("비밀번호").type(JsonFieldType.STRING),
+                                fieldWithPath("passwordRe").description("중복 확인용 비밀번호 재입력").type(JsonFieldType.STRING)
+
+                        ),
+                        responseFields(
+                                fieldWithPath("content").description("응답").type(JsonFieldType.OBJECT),
+                                fieldWithPath("content.userId").description("사용자 식별값").type(JsonFieldType.NUMBER),
+                                fieldWithPath("content.username").description("사용자 계정명").type(JsonFieldType.STRING),
+                                fieldWithPath("content.enrolledAt").description("회원가입일시").type(JsonFieldType.STRING),
+                                fieldWithPath("transactionTime").description("응답시간").type(JsonFieldType.STRING)
+                        )
+
+                ))
+        ;
     }
 
 

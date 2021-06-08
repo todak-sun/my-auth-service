@@ -22,10 +22,10 @@ public class RefreshTokenController {
 
     @PostMapping("/token/refresh")
     public ResponseEntity<?> tokenRefresh(@RequestHeader(name = TokenProvider.REFERESH_TOKEN_HEADER, required = false) String refreshToken) {
-        if (Objects.isNull(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .build();
-        }
+//        if (Objects.isNull(refreshToken)) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .build();
+//        }
 
         Token token = refreshTokenService.generateNewTokenIfValidRefreshToken(refreshToken);
         TokenResponse response = new TokenResponse(token.getAccessToken(), token.getRefreshToken());
