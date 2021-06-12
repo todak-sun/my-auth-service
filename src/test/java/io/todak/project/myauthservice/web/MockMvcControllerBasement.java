@@ -35,6 +35,7 @@ abstract class MockMvcControllerBasement {
 
     @BeforeEach
     public void setUp(WebApplicationContext context, RestDocumentationContextProvider restDocumentationContextProvider) {
+        //TODO : 우아한 형제들 블로그 보고 수정할 것...
         mvc = MockMvcBuilders.webAppContextSetup(context)
                 .alwaysDo(print())
                 .alwaysDo(
